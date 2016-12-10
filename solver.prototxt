@@ -1,4 +1,4 @@
-net: "/home/pbu/Desktop/facialkp.prototxt"
+net: "/home/ericdoug/git/caffe/examples/caffe-facialkp/facialkp.prototxt"
 test_iter: 6
 test_interval: 100
 base_lr: 0.01
@@ -10,5 +10,5 @@ display: 100
 max_iter: 2000
 momentum: 0.9
 snapshot: 1000
-snapshot_prefix: "/home/pbu/Desktop/tmp"
+snapshot_prefix: "/home/ericdoug/models/caffe/facial_keys/kp"
 solver_mode: GPU

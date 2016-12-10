@@ -6,7 +6,7 @@ layers {
   top: "label"
   type: HDF5_DATA
   hdf5_data_param {
-   source: "train.txt"
+   source: "/home/ericdoug/datas/kaggle/facial_keypoint_detect/train.txt"
    batch_size: 64
   }
     include: { phase: TRAIN }
@@ -19,7 +19,7 @@ layers {
   top: "data"
   top: "label"
   hdf5_data_param {
-    source: "test.txt"
+    source: "/home/ericdoug/datas/kaggle/facial_keypoint_detect/val.txt"
     batch_size: 100
    
   }

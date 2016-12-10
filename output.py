@@ -7,16 +7,19 @@ from skimage import transform
 from numpy import ravel
 
 # Make sure that caffe is on the python path:
-#caffe_root = './caffe/'  # this file is expected to be in {caffe_root}/examples
-#import sys
-#sys.path.append(caffe_root + 'python')
-
+caffe_root = '/home/ericdoug/git/caffe/'  # this file is expected to be in {caffe_root}/examples
+import sys
+import os
+sys.path.insert(0, caffe_root + 'python')
 import caffe
+
+os.chdir(caffe_root)
 
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would l1ike to classify.
-MODEL_FILE = './facialkp_predict.prototxt'
-PRETRAINED = './tmp_iter_1000.caffemodel'
+MODEL_FILE = '/home/ericdoug/git/caffe/examples/caffe-facialkp/facialkp_predict.prototxt'
+PRETRAINED = '/home/ericdoug/models/caffe/facial_keys/kp_iter_2000.caffemodel'
+datas_dir = '/home/ericdoug/datas/kaggle/facial_keypoint_detect'
 
 def dist(x,y):   
     #return numpy.sqrt(numpy.sum((x-y)**2))
@@ -35,7 +38,7 @@ def image_histogram_equalization(image, number_bins=256):
 
     return image_equalized.reshape(image.shape), cdf
 
-df = pd.read_csv('test.csv',header=0)
+df = pd.read_csv(os.path.join(datas_dir, 'test.csv'),header=0)
 
 df['Image'] = df['Image'].apply(lambda im: np.fromstring(im, sep=' ') )
 X = np.vstack (df['Image'].values) 
@@ -44,7 +47,7 @@ X = X.astype(np.float32)
 
 # Run Histogram equalization
 for i in range(len(X)):
-       X[i,  :, :] = image_histogram_equalization(X[i,:,:])[0]
+    X[i,  :, :] = image_histogram_equalization(X[i,:,:])[0]
 
 '''
 I = []
@@ -74,8 +77,9 @@ print 'Input Data shape: ', data.shape
 print 'Total batches: ', batches
 
 
-net = caffe.Net(MODEL_FILE,PRETRAINED)
-net.set_mode_gpu()
+# load net
+net = caffe.Net(MODEL_FILE,PRETRAINED, caffe.TEST)
+caffe.set_mode_gpu()
 
 
 data4D = np.zeros([max_value,1,96,96],np.float32)
@@ -93,19 +97,16 @@ print 'Shape', ip1.shape
 
 predicted = []
 
-for b in xrange(batches): 
-
- data4D = np.zeros([BATCH_SIZE,1,96,96]) #create 4D array, first value is batch_size, last number of inputs
- data4DL = np.zeros([BATCH_SIZE,1,1,1]) # need to create 4D array as output, first value is  batch_size, last number of outputs
- data4D[0:BATCH_SIZE,:] = data[b*BATCH_SIZE:b*BATCH_SIZE+BATCH_SIZE,:] # fill value of input xtrain
-
- #predict
- #print [(k, v[0].data.shape) for k, v in net.params.items()]
- net.set_input_arrays(data4D.astype(np.float32),data4DL.astype(np.float32))
- pred = net.forward()
- print 'batch ', b, data4D.shape, data4DL.shape
-
- predicted.append(pred['ip2']*96)
+for b in xrange(batches):
+    data4D = np.zeros([BATCH_SIZE,1,96,96]) #create 4D array, first value is batch_size, last number of inputs
+    data4DL = np.zeros([BATCH_SIZE,1,1,1]) # need to create 4D array as output, first value is  batch_size, last number of outputs
+    data4D[0:BATCH_SIZE,:] = data[b*BATCH_SIZE:b*BATCH_SIZE+BATCH_SIZE,:] # fill value of input xtrain
+    #predict
+    #print [(k, v[0].data.shape) for k, v in net.params.items()]
+    net.set_input_arrays(data4D.astype(np.float32),data4DL.astype(np.float32))
+    pred = net.forward()
+    print 'batch ', b, data4D.shape, data4DL.shape
+    predicted.append(pred['ip2']*96)
 
 
 predicted = np.asarray(predicted, 'float32')
@@ -123,10 +124,10 @@ np.savetxt("fkp_output.csv", predicted, delimiter=",")
 
 for k in xrange(400,412,1):
 
- y = predicted[k]
- print y.reshape(-1,30)
- 
- pl.imshow(df['Image'][k].reshape(96,96), cmap='gray' )
- pl.scatter(y[0::2], y[1::2],  marker='x', s=30)
- pl.show()
+    y = predicted[k]
+    print y.reshape(-1,30)
+     
+    pl.imshow(df['Image'][k].reshape(96,96), cmap='gray' )
+    pl.scatter(y[0::2], y[1::2],  marker='x', s=30)
+    pl.show()
 

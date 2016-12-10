@@ -11,9 +11,12 @@ import random
 from skimage import io, exposure, img_as_uint, img_as_float
 from numpy import (array, dot, arccos)
 from numpy.linalg import norm
+import os
 
-df = pd.read_csv('training.csv',header=0)
-dfp = pd.read_csv('test.csv',header=0)
+datas_dir = '/home/ericdoug/datas/kaggle/facial_keypoint_detect'
+
+df = pd.read_csv(os.path.join(datas_dir, 'training.csv'),header=0)
+dfp = pd.read_csv(os.path.join(datas_dir, 'test.csv'),header=0)
 
 #calculate the distance features
 
